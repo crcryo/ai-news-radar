@@ -1,10 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <opml version="2.0">
   <head>
-    <title>AI News Radar RSS Example</title>
+    <title>AI News Radar RSS Feeds</title>
   </head>
   <body>
-    <outline text="Official AI Sources">
+    <outline text="Global News">
+      <outline
+        text="Reuters"
+        title="Reuters"
+        type="rss"
+        xmlUrl="https://www.reutersagency.com/feed/"
+        htmlUrl="https://www.reuters.com"
+      />
+      <outline
+        text="AP Top News"
+        title="AP Top News"
+        type="rss"
+        xmlUrl="https://rsshub.app/apnews/topics/apf-topnews"
+        htmlUrl="https://apnews.com"
+      />
+      <outline
+        text="BBC News"
+        title="BBC News"
+        type="rss"
+        xmlUrl="https://feeds.bbci.co.uk/news/rss.xml"
+        htmlUrl="https://www.bbc.com/news"
+      />
+    </outline>
+    <outline text="AI News">
       <outline
         text="OpenAI News"
         title="OpenAI News"
@@ -41,41 +64,27 @@
         htmlUrl="https://news.microsoft.com/source/topics/ai/"
       />
     </outline>
-    <outline text="AI Media and Builders">
+    <outline text="Europe Energy Storage">
       <outline
-        text="Wired AI"
-        title="Wired AI"
+        text="PV Magazine"
+        title="PV Magazine"
         type="rss"
-        xmlUrl="https://www.wired.com/feed/tag/ai/latest/rss"
-        htmlUrl="https://www.wired.com/tag/artificial-intelligence/"
+        xmlUrl="https://www.pv-magazine.com/feed/"
+        htmlUrl="https://www.pv-magazine.com"
       />
       <outline
-        text="InfoQ CN"
-        title="InfoQ CN"
+        text="Energy Storage News"
+        title="Energy Storage News"
         type="rss"
-        xmlUrl="https://www.infoq.cn/feed"
-        htmlUrl="https://www.infoq.cn/"
+        xmlUrl="https://www.energy-storage.news/feed/"
+        htmlUrl="https://www.energy-storage.news"
       />
       <outline
-        text="NVIDIA Generative AI Blog"
-        title="NVIDIA Generative AI Blog"
+        text="CleanTechnica"
+        title="CleanTechnica"
         type="rss"
-        xmlUrl="https://developer.nvidia.com/blog/category/generative-ai/feed/"
-        htmlUrl="https://developer.nvidia.com/blog/category/generative-ai/"
-      />
-      <outline
-        text="宝玉"
-        title="宝玉"
-        type="rss"
-        xmlUrl="https://baoyu.io/feed.xml"
-        htmlUrl="https://baoyu.io/"
-      />
-      <outline
-        text="Simon Willison"
-        title="Simon Willison"
-        type="rss"
-        xmlUrl="https://simonwillison.net/atom/everything/"
-        htmlUrl="https://simonwillison.net/"
+        xmlUrl="https://cleantechnica.com/feed/"
+        htmlUrl="https://cleantechnica.com"
       />
     </outline>
   </body>

@@ -2424,32 +2424,46 @@ def collect_all(session: requests.Session, now: datetime) -> tuple[list[RawItem]
     return raw_items, statuses
 
 
+CATEGORY_SITE_ID_MAP: dict[str, str] = {
+    "global news": "global_news",
+    "ai news": "ai_news",
+    "europe energy storage": "energy_storage",
+}
+
+
 def parse_opml_subscriptions(opml_path: Path) -> list[dict[str, str]]:
     root = ET.parse(opml_path).getroot()
     out: list[dict[str, str]] = []
     seen: set[str] = set()
 
-    for outline in root.findall(".//outline"):
-        xml_url = str(outline.attrib.get("xmlUrl") or "").strip()
-        if not xml_url:
-            continue
-        if xml_url in seen:
-            continue
-        seen.add(xml_url)
-        title = first_non_empty(
-            outline.attrib.get("title"),
-            outline.attrib.get("text"),
-            host_of_url(xml_url),
-            xml_url,
-        )
-        html_url = str(outline.attrib.get("htmlUrl") or "").strip()
-        out.append(
-            {
-                "title": title,
-                "xml_url": xml_url,
-                "html_url": html_url,
-            }
-        )
+    body = root.find("body")
+    if body is None:
+        return out
+
+    for parent_outline in body.findall("outline"):
+        category = str(parent_outline.attrib.get("text") or "").strip()
+        for outline in parent_outline.findall("outline"):
+            xml_url = str(outline.attrib.get("xmlUrl") or "").strip()
+            if not xml_url:
+                continue
+            if xml_url in seen:
+                continue
+            seen.add(xml_url)
+            title = first_non_empty(
+                outline.attrib.get("title"),
+                outline.attrib.get("text"),
+                host_of_url(xml_url),
+                xml_url,
+            )
+            html_url = str(outline.attrib.get("htmlUrl") or "").strip()
+            out.append(
+                {
+                    "title": title,
+                    "xml_url": xml_url,
+                    "html_url": html_url,
+                    "category": category,
+                }
+            )
     return out
 
 
@@ -2658,6 +2672,8 @@ def fetch_opml_rss(
         original_feed_url = str(feed.get("xml_url_original") or feed_url)
         feed_title = feed["title"]
         feed_id = hashlib.sha1(feed_url.encode("utf-8")).hexdigest()[:10]
+        raw_category = str(feed.get("category") or "").strip()
+        category_site_id = CATEGORY_SITE_ID_MAP.get(raw_category.lower(), "opmlrss")
         start = time.perf_counter()
         error = None
         local_items: list[RawItem] = []
@@ -2719,7 +2735,7 @@ def fetch_opml_rss(
                 for (title, link, _), published in zip(pending, corrected_times):
                     local_items.append(
                         RawItem(
-                            site_id="opmlrss",
+                            site_id=category_site_id,
                             site_name="OPML RSS",
                             source=source_name,
                             title=title,
@@ -2750,7 +2766,7 @@ def fetch_opml_rss(
                 for (entry, _), published in zip(pending_xml, corrected_times):
                     local_items.append(
                         RawItem(
-                            site_id="opmlrss",
+                            site_id=category_site_id,
                             site_name="OPML RSS",
                             source=source_name,
                             title=entry.get("title", ""),
@@ -2767,7 +2783,7 @@ def fetch_opml_rss(
 
         duration_ms = int((time.perf_counter() - start) * 1000)
         status = {
-            "site_id": f"opmlrss:{feed_id}",
+            "site_id": f"{category_site_id}:{feed_id}" if category_site_id != "opmlrss" else f"opmlrss:{feed_id}",
             "site_name": "OPML RSS",
             "feed_title": feed_title,
             "feed_url": original_feed_url,
@@ -2859,6 +2875,9 @@ SOURCE_TIER_BY_SITE: dict[str, tuple[str, str, int]] = {
     "waytoagi": ("community", "社区更新", 2),
     "followbuilders": ("builders", "Builders/X源", 2),
     "opmlrss": ("user_opml", "RSS/OPML", 3),
+    "global_news": ("global_news", "Global News", 6),
+    "ai_news": ("user_opml", "AI News", 3),
+    "energy_storage": ("energy_storage", "Energy Storage", 6),
     "tikhub_douyin": ("self_media", "自媒体源", 4),
     "tikhub_xiaohongshu": ("self_media", "自媒体源", 4),
     "xapi": ("advanced", "高级源", 4),
@@ -2881,6 +2900,8 @@ SOURCE_TIER_IMPORTANCE = {
     "self_media": 0.48,
     "advanced": 0.45,
     "discussion": 0.32,
+    "global_news": 0.4,
+    "energy_storage": 0.4,
     "other": 0.25,
 }
 
@@ -6457,6 +6478,10 @@ def main() -> int:
             ):
                 continue
             normalized = add_ai_relevance_fields(normalized)
+            sid = str(normalized.get("site_id") or "")
+            if sid in ("global_news", "energy_storage"):
+                normalized["ai_score"] = 0.66
+                normalized["ai_is_related"] = True
             normalized = add_source_tier_fields(normalized)
             latest_items_all_raw.append(normalized)
 
