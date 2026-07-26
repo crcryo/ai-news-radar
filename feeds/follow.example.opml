@@ -6,18 +6,18 @@
   <body>
     <outline text="Global News">
       <outline
-        text="Reuters"
-        title="Reuters"
+        text="The Guardian"
+        title="The Guardian"
         type="rss"
-        xmlUrl="https://www.reutersagency.com/feed/"
-        htmlUrl="https://www.reuters.com"
+        xmlUrl="https://www.theguardian.com/world/rss"
+        htmlUrl="https://www.theguardian.com"
       />
       <outline
-        text="AP Top News"
-        title="AP Top News"
+        text="NPR"
+        title="NPR"
         type="rss"
-        xmlUrl="https://rsshub.app/apnews/topics/apf-topnews"
-        htmlUrl="https://apnews.com"
+        xmlUrl="https://feeds.npr.org/1001/rss.xml"
+        htmlUrl="https://www.npr.org"
       />
       <outline
         text="BBC News"

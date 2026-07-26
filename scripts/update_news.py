@@ -2859,7 +2859,7 @@ def load_archive(path: Path) -> dict[str, dict[str, Any]]:
 def event_time(record: dict[str, Any]) -> datetime | None:
     # RSS sources must rely on the source's publish time only.
     # first_seen_at is fetch time and would falsely mark historical items as "24h".
-    if str(record.get("site_id") or "") == "opmlrss":
+    if str(record.get("site_id") or "") in ("opmlrss", "global_news", "energy_storage", "ai_news"):
         return parse_iso(record.get("published_at"))
     return parse_iso(record.get("published_at")) or parse_iso(record.get("first_seen_at"))
 
@@ -6535,6 +6535,9 @@ def main() -> int:
         sid = s["site_id"]
         if sid not in site_name_by_id:
             site_name_by_id[sid] = s.get("site_name") or sid
+    site_name_by_id["global_news"] = "Global News"
+    site_name_by_id["energy_storage"] = "Energy Storage"
+    site_name_by_id["ai_news"] = "AI News"
 
     for record in latest_items_ai_dedup:
         sid = record["site_id"]

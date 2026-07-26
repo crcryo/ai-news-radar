@@ -1,3 +1,29 @@
+const CATEGORY_BY_SITE = {
+  global_news: "global_news",
+  energy_storage: "energy_storage",
+  ai_news: "ai_news",
+  official_ai: "ai_news",
+  curated_media: "ai_news",
+  aihot: "ai_news",
+  aibreakfast: "ai_news",
+  followbuilders: "ai_news",
+  xapi: "ai_news",
+  socialdata_x: "ai_news",
+  techurls: "global_news",
+  buzzing: "global_news",
+  iris: "global_news",
+  bestblogs: "ai_news",
+  hackernews: "ai_news",
+  aihubtoday: "ai_news",
+  aibase: "ai_news",
+  waytoagi: "ai_news",
+  newsnow: "global_news",
+  opmlrss: "global_news",
+  tikhub_douyin: "ai_news",
+  tikhub_xiaohongshu: "ai_news",
+  zeli: "global_news",
+};
+
 const state = {
   itemsAi: [],
   itemsAll: [],
@@ -16,6 +42,7 @@ const state = {
   siteFilter: "",
   authorFilter: "",
   query: "",
+  categoryFilter: "",
   // 单层信息架构：category（内容 tab） x mode（精选/全量全局开关）两个维度。
   // mode=selected 主列表读 mergedStories()（AI 相关合并事件池，纯时间倒序）；
   // mode=all 主列表读 itemsAllRaw/itemsAll（全量原始条目池）。
@@ -334,6 +361,7 @@ function activeAdjustmentCount() {
     Boolean(state.siteFilter || state.authorFilter),
     state.mode !== "selected",
     state.mode === "all" && !state.allDedup,
+    Boolean(state.categoryFilter),
   ].filter(Boolean).length;
 }
 
@@ -357,6 +385,7 @@ function renderDataSourceIndicator() {
 function clearAllFilters() {
   state.query = "";
   state.activeSection = "all";
+  state.categoryFilter = "";
   state.siteFilter = "";
   state.authorFilter = "";
   state.mode = "selected";
@@ -366,6 +395,7 @@ function clearAllFilters() {
   state.xAuthorsExpanded = false;
   if (searchInputEl) searchInputEl.value = "";
   if (siteSelectEl) siteSelectEl.value = "";
+  if (categoryNavEl) categoryNavEl.querySelectorAll(".cat-tab").forEach((b) => b.classList.toggle("active", b.dataset.category === "all"));
   rerenderCurrentView();
 }
 
@@ -1223,12 +1253,19 @@ function hotBoardEntries() {
 // ---- 主列表数据池：精选模式=mergedStories() 全量（纯时间倒序），全量模式=原始条目池 ----
 
 function mainListStoriesBase() {
-  return mergedStories().filter((story) => storyMatchesSiteFilter(story) && storyMatchesQuery(story));
+  return mergedStories().filter((story) => {
+    if (state.categoryFilter) {
+      const rep = storyRepresentativeItem(story);
+      if (!rep || CATEGORY_BY_SITE[rep.site_id] !== state.categoryFilter) return false;
+    }
+    return storyMatchesSiteFilter(story) && storyMatchesQuery(story);
+  });
 }
 
 function mainListRawItemsBase() {
   const q = state.query.trim().toLowerCase();
   return effectiveAllItems().filter((item) => {
+    if (state.categoryFilter && CATEGORY_BY_SITE[item.site_id] !== state.categoryFilter) return false;
     if (state.siteFilter && item.site_id !== state.siteFilter) return false;
     if (state.authorFilter && itemXAuthor(item) !== state.authorFilter) return false;
     if (!q) return true;
@@ -2345,6 +2382,28 @@ if (dataSourceResetBtnEl) {
   dataSourceResetBtnEl.addEventListener("click", () => {
     try { localStorage.removeItem("dataBaseUrl"); } catch {}
     window.location.href = window.location.pathname;
+  });
+}
+
+const categoryNavEl = document.getElementById("categoryNav");
+if (categoryNavEl) {
+  categoryNavEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".cat-tab");
+    if (!btn) return;
+    const cat = btn.dataset.category;
+    if (cat === state.categoryFilter) return;
+    state.query = "";
+    state.activeSection = "all";
+    state.siteFilter = "";
+    state.authorFilter = "";
+    state.mode = "selected";
+    state.allDedup = true;
+    state.categoryFilter = cat;
+    state.mainListVisibleCount = MAIN_LIST_PAGE_SIZE;
+    if (searchInputEl) searchInputEl.value = "";
+    if (siteSelectEl) siteSelectEl.value = "";
+    categoryNavEl.querySelectorAll(".cat-tab").forEach((b) => b.classList.toggle("active", b.dataset.category === cat));
+    rerenderCurrentView();
   });
 }
 
