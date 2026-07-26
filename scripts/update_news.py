@@ -6482,6 +6482,7 @@ def main() -> int:
             if sid in ("global_news", "energy_storage"):
                 normalized["ai_score"] = 0.66
                 normalized["ai_is_related"] = True
+                normalized["ai_label"] = "industry_business"
             normalized = add_source_tier_fields(normalized)
             latest_items_all_raw.append(normalized)
 
