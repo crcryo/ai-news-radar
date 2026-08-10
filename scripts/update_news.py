@@ -2625,6 +2625,22 @@ def fetch_opml_rss(
     if max_feeds > 0:
         feeds = feeds[:max_feeds]
 
+    # RSS_SKIP_CATEGORIES: comma-separated site_ids (e.g. "ai_news,energy_storage")
+    # to skip this run. Lets the workflow rotate categories across days so some
+    # categories refresh daily while others refresh every 2 days.
+    skip_categories = {
+        part.strip()
+        for part in str(os.environ.get("RSS_SKIP_CATEGORIES") or "").split(",")
+        if part.strip()
+    }
+    if skip_categories:
+        feeds = [
+            feed
+            for feed in feeds
+            if CATEGORY_SITE_ID_MAP.get(str(feed.get("category") or "").strip().lower(), "opmlrss")
+            not in skip_categories
+        ]
+
     out: list[RawItem] = []
     feed_statuses: list[dict[str, Any]] = []
     resolved_feeds: list[dict[str, str]] = []
@@ -2736,7 +2752,7 @@ def fetch_opml_rss(
                     local_items.append(
                         RawItem(
                             site_id=category_site_id,
-                            site_name="OPML RSS",
+                            site_name=first_non_empty(feed_title, "OPML RSS"),
                             source=source_name,
                             title=title,
                             url=link,
@@ -2767,7 +2783,7 @@ def fetch_opml_rss(
                     local_items.append(
                         RawItem(
                             site_id=category_site_id,
-                            site_name="OPML RSS",
+                            site_name=first_non_empty(feed_title, "OPML RSS"),
                             source=source_name,
                             title=entry.get("title", ""),
                             url=entry.get("link", ""),
@@ -6544,7 +6560,7 @@ def main() -> int:
         if sid not in site_stat:
             site_stat[sid] = {
                 "site_id": sid,
-                "site_name": record["site_name"],
+                "site_name": site_name_by_id.get(sid, record["site_name"]),
                 "count": 0,
                 "raw_count": raw_count_by_site.get(sid, 0),
             }
