@@ -6081,7 +6081,7 @@ def merge_story_items(
         groups.setdefault(story_id, []).append(item)
 
     stories = [build_story_record(story_id, group_items, now, window_hours) for story_id, group_items in groups.items()]
-    stories.sort(key=lambda story: (-float(story.get("score") or 0), str(story.get("latest_at") or ""), str(story.get("title") or "")))
+    stories.sort(key=lambda story: str(story.get("latest_at") or ""), reverse=True)
     return stories, events
 
 

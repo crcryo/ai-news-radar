@@ -9,9 +9,9 @@ on:
         default: false
         type: boolean
   schedule:
-    # 每天 08:00 UTC 运行。global_news 每天更新；
+    # 中国时间每天 07:00（= UTC 前一日 23:00）运行。global_news 每天更新；
     # ai_news/energy_storage 通过 RSS_SKIP_CATEGORIES 按日期奇偶轮换，每 2 天更新一次。
-    - cron: "0 8 * * *"
+    - cron: "0 23 * * *"
 
 concurrency:
   group: update-ai-news-${{ github.ref }}
