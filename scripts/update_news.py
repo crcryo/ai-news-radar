@@ -6444,14 +6444,16 @@ def main() -> int:
             existing["last_seen_at"] = iso(now)
             apply_public_raw_meta(existing, raw)
 
-    # Prune old archive
+    # Prune old archive: keep only items published within the last N days.
+    # last_seen_at gets refreshed every run, so it cannot be the pruning key;
+    # published_at is the user-facing age of the item.
     keep_after = now - timedelta(days=args.archive_days)
     pruned: dict[str, dict[str, Any]] = {}
     for item_id, record in archive.items():
         ts = (
-            parse_iso(record.get("last_seen_at"))
-            or parse_iso(record.get("published_at"))
+            parse_iso(record.get("published_at"))
             or parse_iso(record.get("first_seen_at"))
+            or parse_iso(record.get("last_seen_at"))
             or now
         )
         if ts >= keep_after:
