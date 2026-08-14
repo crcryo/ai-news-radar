@@ -1,7 +1,7 @@
 {
-  "name": "AI News Radar",
-  "short_name": "AI Radar",
-  "description": "Curated AI and technology signals from the past 24 hours.",
+  "name": "News Radar",
+  "short_name": "News Radar",
+  "description": "Curated global, AI, and energy storage news from trusted sources.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

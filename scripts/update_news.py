@@ -2625,22 +2625,6 @@ def fetch_opml_rss(
     if max_feeds > 0:
         feeds = feeds[:max_feeds]
 
-    # RSS_SKIP_CATEGORIES: comma-separated site_ids (e.g. "ai_news,energy_storage")
-    # to skip this run. Lets the workflow rotate categories across days so some
-    # categories refresh daily while others refresh every 2 days.
-    skip_categories = {
-        part.strip()
-        for part in str(os.environ.get("RSS_SKIP_CATEGORIES") or "").split(",")
-        if part.strip()
-    }
-    if skip_categories:
-        feeds = [
-            feed
-            for feed in feeds
-            if CATEGORY_SITE_ID_MAP.get(str(feed.get("category") or "").strip().lower(), "opmlrss")
-            not in skip_categories
-        ]
-
     out: list[RawItem] = []
     feed_statuses: list[dict[str, Any]] = []
     resolved_feeds: list[dict[str, str]] = []
@@ -6256,7 +6240,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Aggregate AI news updates from multiple sources")
     parser.add_argument("--output-dir", default="data", help="Directory for output JSON files")
     parser.add_argument("--window-hours", type=int, default=24, help="24h window size")
-    parser.add_argument("--archive-days", type=int, default=21, help="Keep archive for N days")
+    parser.add_argument("--archive-days", type=int, default=7, help="Keep archive for N days")
     parser.add_argument("--translate-max-new", type=int, default=80, help="Max new EN->ZH title translations per run")
     parser.add_argument(
         "--translate-max-new-broad",
